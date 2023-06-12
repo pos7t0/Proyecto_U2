@@ -598,6 +598,7 @@ int main(){
     Jerarquia tree;
 	tree.loadGuardiansFromFile("data.csv");
     //tree.printGuardians();
+    //verificar que haya maestro-aprendiz en cada aldea
     if(!existe_guardianAldea(mapa,tree)){
         cout<< "falta agregar maestros que tengan un alumno en la";
         cout<< "misma ciudad en el archivo data.csv"<<endl;
@@ -610,7 +611,7 @@ int main(){
     cout<<"Ingrese el metodo de aprendiz que desea ocupar"<<endl;
     cout<<"[1]crear aprendiz [2] escoger aprendiz"<<endl;
     cin >> opcion;
-
+    //para que no evite mi 
     cin.ignore();
     switch (opcion)
     {
@@ -633,16 +634,20 @@ int main(){
         jugador=escogerplayer(name,tree);
         break;
     }
+    //verificar de nuevo si es que el usuario escoge mal
     if(!existe_guardianAldea(mapa,tree)){
         cout<< "has elminado al guardian que hacia funcionar tu codigo"<<endl;
         cout<< "deberas escoger bien para que no pase eso"<<endl;
         return 1;
     }
+    //ahi recien se pone los datos en el unorder_map dato_aldea
     poner_guardianAldea(dato_aldea,mapa,tree);
     system("cls");
     do{
         cout<<"Bienvenido a la aldea: "<< jugador->villageactual<<endl;
         cout<<endl;
+        //estos if son para mostrar datos que se pide en el proyecto
+        //pero se quitan para no recomendar al usuario
         if(!dato_aldea[jugador->villageactual]->derrotado){
             cout<<"2 Puntos)Entrenamiento con Maestro: "<<dato_aldea[jugador->villageactual]->name<<endl;
             cout<<endl;
@@ -655,14 +660,15 @@ int main(){
             recomendacion(dato_aldea[jugador->villageactual]);
             cout<<endl;
         }
+        //muestra los datos del jefe para la pelea final
         if(jugador->estado=="Guardian"&& dato_aldea[jugador->villageactual]->name=="Stormheart"){
-            printplayer(jugador);
             printmaestro(dato_aldea[jugador->villageactual]);
         }
+        //muestra los datos del jugador
         printplayer(jugador);
-        cout<<mapa.no_tieneconecccion(jugador->villageactual)<<endl;
         cout<<endl;
         do{
+            //lo mismo que el anterior if, recomiendan cuando pueden, y dejan de hacerlo cuando no pueden
             cout<<"Ingrese el metodo de aprendis que desea ocupar"<<endl;
             if(!mapa.no_tieneconecccion(jugador->villageactual)){
                 cout<<"[1] ir aldea "; 
@@ -687,11 +693,14 @@ int main(){
         cin.ignore();
         switch (opcion){
         case 1:
+        //muestra las posibilidades para el jugador
             mapa.printAldeaCer(jugador->villageactual);
             do{
                 cout<<"Ingresa el nombre de la aldea que quieras ir"<<endl;
                 getline(cin,village);
+                //se revisa si exite la aldea y si tiene coneccion
             }while(!mapa.existealdea(village) || !mapa.existe_coneccion(jugador->villageactual,village));
+            //se agrega a la lista del player las aldeas que ha estado
             for(const auto& visit :jugador->villagevisitados){
                 if(visit==village){
                     existef=true;
@@ -701,26 +710,34 @@ int main(){
             if(!existef){
                 jugador->villagevisitados.push_back(village);
             }
+            //cambia de aldea
             jugador->villageactual=village;
             existef=false;
+            //se guarda informacion de los viajes
             viajes->lugaresVisitados.push_back(village);
+            //se comvierte en guardian si recorrio todas las aldea
             if(mapa.cantidadAldeas()==lugar_visitado(jugador)){
                 jugador->estado="Guardian";
             }
+            //se comvierte en guardian si tiene mas de 90 pts
             if(jugador->power_level+1>=90){
                 jugador->estado="Guardian";
             }
+            //evita que el jugador pase de los 100pts 
             if(jugador->power_level<100){
                 jugador->power_level+=1;
+                cout<<"Has conseguido un punto por visita"<<endl;
             }
             system("cls");
-            cout<<"Has conseguido un punto por visita"<<endl;
+            
             break;
         case 2:
             do{
                 cout<<"El alquimista te pide el nombre de la aldea que quieres conectar a "<<jugador->villageactual <<endl;
                 getline(cin,village);
+                //se revisa si exite la aldea, que no una la misma aldea y si ya tiene coneccion
             }while(!mapa.existealdea(village)|| village==jugador->villageactual || mapa.existe_coneccion(jugador->villageactual,village));
+            //une aldea
             mapa.uniraldea(jugador->villageactual,village);
             random=generarNumeroAleatorio(2, 4);
             jugador->power_level-=random;
@@ -734,6 +751,7 @@ int main(){
             random=generarNumeroAleatorio(1, 6);
             cout<<"El jugador "<< jugador->name<<" ha sacado un "<< random<<endl;
             cout<<"se multiplica con su poder "<< jugador->power_level<<" dando una cantiadad de "<< jugador->power_level*random<<endl;
+            //define si el jugador completo o no el entrenamiento
             if(dato_aldea[jugador->villageactual]->aprendices[0]->power_level*randomnpc<=jugador->power_level*random){
                 cout<<"has podido completar el entrenamiento"<<endl;
                 dato_aldea[jugador->villageactual]->aprendices[0]->derrotado=true;
@@ -743,15 +761,18 @@ int main(){
                 if(jugador->power_level<100){
                     jugador->power_level+=1;
                 }
+                //se guarda la informacion de entrenamiento
                 peleas->nombrerival.push_back(dato_aldea[jugador->villageactual]->name);
                 peleas->resultado.push_back("Completado");
             }else{
+                //se guarda la informacion de entrenamiento
                 peleas->nombrerival.push_back(dato_aldea[jugador->villageactual]->name);
                 peleas->resultado.push_back("No completado");
                 cout<<"no has podido completar el entrenamiento"<<endl;
             }
             break;
         case 4:
+        //lo mismo del case3 pero con el maestro
             cout<<"Empieza el entrenamiento"<<endl;
             randomnpc=generarNumeroAleatorio(4, 6);
             cout<<"El aprendiz "<< dato_aldea[jugador->villageactual]->name<<" ha sacado un "<< randomnpc<<endl;
@@ -781,11 +802,13 @@ int main(){
             }
             break;
         }
+        //se termina el juego por el usuario o si se vence al jefe
     }while(opcion>=1 && opcion<=4 && !ganar(dato_aldea[jugador->villageactual]));
-
+    //se felicita
     if(ganar(dato_aldea[jugador->villageactual])){
         cout << "has ganado el jugo al derrota al maximo maestro"<<endl;
     }
+    //muestra el historial
     cout<<"historial de viajes"<<endl;
     printviajes(viajes);
     cout<<"historial de peleas"<<endl;
